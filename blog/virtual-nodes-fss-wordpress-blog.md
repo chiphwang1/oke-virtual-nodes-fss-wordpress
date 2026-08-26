@@ -12,7 +12,9 @@ OCI File Storage, or FSS, provides durable shared filesystem storage through the
 
 [![Deploy to Oracle Cloud](https://oci-resourcemanager-plugin.plugins.oci.oraclecloud.com/latest/deploy-to-oracle-cloud.svg)](https://cloud.oracle.com/resourcemanager/stacks/create?zipUrl=https://github.com/chiphwang1/oke-virtual-nodes-fss-wordpress/releases/download/v0.1.0/oke-vn-fss-wordpress-orm.zip)
 
-Use the Deploy to Oracle Cloud button to launch the accompanying Resource Manager stack. It prompts for an existing or new OKE cluster, an existing or new FSS share, and an existing or new external MySQL service. The included Helm chart deploys WordPress after the stack finishes.
+Use the Deploy to Oracle Cloud button to launch the accompanying Resource Manager stack. It prompts for an existing or new OKE cluster, an existing or new FSS share, and an existing or new external MySQL service.
+
+After the stack completes, deploy WordPress with the included [WordPress Helm chart](https://github.com/chiphwang1/oke-virtual-nodes-fss-wordpress/tree/main/helm/wordpress-virtual-fss). The Resource Manager stack provisions the OCI infrastructure but does not install the Helm release.
 
 ## WordPress state separation
 
