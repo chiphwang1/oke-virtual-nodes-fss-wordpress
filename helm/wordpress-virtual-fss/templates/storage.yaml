@@ -1,0 +1,31 @@
+{{- if ne .Values.fss.mode "existing-claim" }}
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: {{ .Values.fss.storageClassName }}
+provisioner: fss.csi.oraclecloud.com
+reclaimPolicy: Retain
+volumeBindingMode: Immediate
+parameters:
+  availabilityDomain: {{ required "fss.availabilityDomain is required" .Values.fss.availabilityDomain | quote }}
+  compartmentOcid: {{ required "fss.compartmentOcid is required" .Values.fss.compartmentOcid | quote }}
+  exportPath: {{ .Values.fss.exportPath | quote }}
+  exportOptions: {{ printf "[{\"source\":\"%s\",\"requirePrivilegedSourcePort\":false,\"access\":\"READ_WRITE\",\"identitySquash\":\"NONE\"}]" .Values.fss.allowedSourceCidr | quote }}
+  encryptInTransit: "false"
+  {{- if eq .Values.fss.mode "dynamic-new" }}
+  mountTargetSubnetOcid: {{ required "fss.mountTargetSubnetOcid is required" .Values.fss.mountTargetSubnetOcid | quote }}
+  {{- else }}
+  mountTargetOcid: {{ required "fss.mountTargetOcid is required" .Values.fss.mountTargetOcid | quote }}
+  {{- end }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: wordpress-content
+spec:
+  accessModes: [ReadWriteMany]
+  storageClassName: {{ .Values.fss.storageClassName | quote }}
+  resources:
+    requests:
+      storage: {{ .Values.fss.size }}
+{{- end }}

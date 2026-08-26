@@ -1,0 +1,24 @@
+replicaCount: 2
+image:
+  repository: wordpress
+  tag: 6.8.2-apache
+virtualNodes:
+  taintKey: workload
+  taintValue: wordpress
+mysql:
+  existingSecret: wordpress-db
+fss:
+  # dynamic-new, dynamic-existing-mount-target, or existing-claim
+  mode: dynamic-new
+  storageClassName: wordpress-fss
+  existingClaim: ""
+  availabilityDomain: ""
+  compartmentOcid: ""
+  mountTargetSubnetOcid: ""
+  mountTargetOcid: ""
+  exportPath: /wordpress
+  allowedSourceCidr: 10.0.0.0/16
+  size: 50Gi
+service:
+  type: LoadBalancer
+  port: 80

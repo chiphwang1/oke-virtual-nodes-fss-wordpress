@@ -1,0 +1,52 @@
+{{- $claim := ternary .Values.fss.existingClaim "wordpress-content" (eq .Values.fss.mode "existing-claim") }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "wordpress-virtual-fss.fullname" . }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels: { app.kubernetes.io/name: {{ include "wordpress-virtual-fss.name" . }} }
+  template:
+    metadata:
+      labels: { app.kubernetes.io/name: {{ include "wordpress-virtual-fss.name" . }} }
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels: { app.kubernetes.io/name: {{ include "wordpress-virtual-fss.name" . }} }
+              topologyKey: kubernetes.io/hostname
+      tolerations:
+        - key: {{ .Values.virtualNodes.taintKey | quote }}
+          operator: Equal
+          value: {{ .Values.virtualNodes.taintValue | quote }}
+          effect: NoSchedule
+      containers:
+        - name: wordpress
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          ports: [{ name: http, containerPort: 80 }]
+          env:
+            - name: WORDPRESS_DB_HOST
+              valueFrom: { secretKeyRef: { name: {{ .Values.mysql.existingSecret }}, key: host } }
+            - name: WORDPRESS_DB_NAME
+              valueFrom: { secretKeyRef: { name: {{ .Values.mysql.existingSecret }}, key: database } }
+            - name: WORDPRESS_DB_USER
+              valueFrom: { secretKeyRef: { name: {{ .Values.mysql.existingSecret }}, key: username } }
+            - name: WORDPRESS_DB_PASSWORD
+              valueFrom: { secretKeyRef: { name: {{ .Values.mysql.existingSecret }}, key: password } }
+          volumeMounts:
+            - name: wordpress-content
+              mountPath: /var/www/html/wp-content
+      volumes:
+        - name: wordpress-content
+          persistentVolumeClaim: { claimName: {{ $claim }} }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "wordpress-virtual-fss.fullname" . }}
+spec:
+  type: {{ .Values.service.type }}
+  selector: { app.kubernetes.io/name: {{ include "wordpress-virtual-fss.name" . }} }
+  ports: [{ name: http, port: {{ .Values.service.port }}, targetPort: http }]

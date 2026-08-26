@@ -1,0 +1,46 @@
+title: "OKE Virtual Nodes with FSS WordPress"
+description: "Create an Enhanced OKE cluster or use an existing one, add a Virtual Node pool, and choose new or existing FSS and MySQL prerequisites."
+schemaVersion: "1.1.0"
+version: "1.0.0"
+locale: "en"
+variableGroups:
+  - title: "Target and Cluster"
+    variables: [region, compartment_ocid, cluster_mode, existing_cluster_ocid, cluster_name, kubernetes_version, vcn_ocid, control_plane_subnet_ocid, load_balancer_subnet_ocid, control_plane_is_public, pods_cidr, services_cidr]
+  - title: "Virtual Nodes"
+    variables: [availability_domain, virtual_node_subnet_ocid, virtual_node_pool_name, virtual_node_count, pod_shape]
+  - title: "FSS Choice"
+    variables: [fss_mode, create_fss_mount_target, fss_mount_target_subnet_ocid, existing_fss_export_set_ocid, fss_export_path, allowed_pod_cidr]
+  - title: "MySQL Choice"
+    variables: [mysql_mode, existing_mysql_host, mysql_subnet_ocid, mysql_shape_name, mysql_admin_username, mysql_admin_password, mysql_storage_gb, mysql_high_availability]
+variables:
+  region: { title: Region, type: string, required: true, pattern: "^[a-z]{2}-[a-z]+-[0-9]$" }
+  compartment_ocid: { title: Compartment OCID, type: string, required: true }
+  cluster_mode: { title: OKE cluster, description: "Choose whether to use an existing cluster or create a new Enhanced cluster.", type: enum, default: existing, enum: [existing, create] }
+  existing_cluster_ocid: { title: Existing OKE cluster OCID, type: string, required: false, visible: { eq: [${cluster_mode}, existing] } }
+  cluster_name: { title: New cluster name, type: string, default: wordpress-virtual-fss, visible: { eq: [${cluster_mode}, create] } }
+  kubernetes_version: { title: Kubernetes version, type: string, default: v1.36.1, visible: { eq: [${cluster_mode}, create] } }
+  vcn_ocid: { title: Existing VCN OCID, type: string, required: false, visible: { eq: [${cluster_mode}, create] } }
+  control_plane_subnet_ocid: { title: API endpoint subnet OCID, type: string, required: false, visible: { eq: [${cluster_mode}, create] } }
+  load_balancer_subnet_ocid: { title: Service load balancer subnet OCID, type: string, required: false, visible: { eq: [${cluster_mode}, create] } }
+  control_plane_is_public: { title: Public Kubernetes API, type: boolean, default: false, visible: { eq: [${cluster_mode}, create] } }
+  pods_cidr: { title: Pod CIDR, type: string, default: 10.244.0.0/16, visible: { eq: [${cluster_mode}, create] } }
+  services_cidr: { title: Service CIDR, type: string, default: 10.96.0.0/16, visible: { eq: [${cluster_mode}, create] } }
+  availability_domain: { title: Availability domain, type: string, required: true }
+  virtual_node_subnet_ocid: { title: Virtual Node pod subnet OCID, type: string, required: true }
+  virtual_node_pool_name: { title: Virtual Node pool name, type: string, default: wordpress-virtual-nodes }
+  virtual_node_count: { title: Virtual Node count, type: integer, default: 2 }
+  pod_shape: { title: Pod shape, type: string, default: Pod.Standard.E4.Flex }
+  fss_mode: { title: FSS share, description: "Create a new FSS share or use an existing share.", type: enum, default: existing, enum: [existing, create] }
+  create_fss_mount_target: { title: Create FSS mount target, type: boolean, default: true, visible: { eq: [${fss_mode}, create] } }
+  fss_mount_target_subnet_ocid: { title: FSS mount target subnet OCID, type: string, required: false, visible: { eq: [${fss_mode}, create] } }
+  existing_fss_export_set_ocid: { title: Existing FSS export set OCID, type: string, required: false }
+  fss_export_path: { title: FSS export path, type: string, default: /wordpress }
+  allowed_pod_cidr: { title: Pod CIDR allowed by the export, type: string, default: 10.0.0.0/16 }
+  mysql_mode: { title: External MySQL, description: "Create a new billable MySQL DB System or use an existing one.", type: enum, default: existing, enum: [existing, create] }
+  existing_mysql_host: { title: Existing MySQL host and port, type: string, required: false, visible: { eq: [${mysql_mode}, existing] } }
+  mysql_subnet_ocid: { title: MySQL subnet OCID, type: string, required: false, visible: { eq: [${mysql_mode}, create] } }
+  mysql_shape_name: { title: MySQL shape, type: string, default: MySQL.2, visible: { eq: [${mysql_mode}, create] } }
+  mysql_admin_username: { title: MySQL administrator, type: string, default: wordpress, visible: { eq: [${mysql_mode}, create] } }
+  mysql_admin_password: { title: MySQL administrator password, type: password, required: false, sensitive: true, visible: { eq: [${mysql_mode}, create] } }
+  mysql_storage_gb: { title: MySQL storage (GB), type: integer, default: 50, visible: { eq: [${mysql_mode}, create] } }
+  mysql_high_availability: { title: Enable MySQL HA, type: boolean, default: false, visible: { eq: [${mysql_mode}, create] } }
