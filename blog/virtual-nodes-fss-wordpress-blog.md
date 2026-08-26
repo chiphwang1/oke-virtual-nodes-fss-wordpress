@@ -1,6 +1,6 @@
 # Build Stateful Kubernetes Applications on OKE Virtual Nodes with OCI File Storage
 
-Oracle Kubernetes Engine (OKE) Virtual Nodes offer a serverless Kubernetes experience: Kubernetes schedules pods while OCI operates the underlying worker infrastructure. That model removes the need to provision, patch, scale, or maintain node pools for the application.
+OCI Kubernetes Engine (OKE) Virtual Nodes offer a serverless Kubernetes experience: Kubernetes schedules pods while OCI operates the underlying worker infrastructure. That model removes the need to provision, patch, scale, or maintain node pools for the application.
 
 For a long time, however, one important question limited which workloads were a good fit: where does durable application data live when the pod itself is ephemeral?
 
