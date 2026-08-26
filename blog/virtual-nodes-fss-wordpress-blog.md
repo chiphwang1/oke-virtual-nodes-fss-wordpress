@@ -1,7 +1,5 @@
 # Build Stateful Kubernetes Applications on OKE Virtual Nodes with OCI File Storage
 
-> **Experimental field report** — This pattern was validated in Phoenix on 26 August 2026 with OKE 1.36.1 in a tenancy where the feature was enabled. Public OKE documentation may not yet describe FSS-backed persistent volumes for Virtual Nodes as generally available. Confirm availability for the intended tenancy and region before relying on this pattern.
-
 OCI Kubernetes Engine, or OKE, Virtual Nodes provide a serverless Kubernetes experience without customer-managed worker nodes. Persistent data needs a separate design because pods can be replaced at any time.
 
 OCI File Storage, or FSS, provides durable shared filesystem storage through the Kubernetes PVC model. It is useful for workloads that need shared files, including uploads, build artifacts, shared workspaces, and model artifacts.
