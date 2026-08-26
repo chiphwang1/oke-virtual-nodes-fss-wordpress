@@ -10,11 +10,19 @@ This post explains the pattern using a highly available WordPress front end runn
 
 ![OKE Virtual Nodes, FSS, and external MySQL architecture](assets/wordpress-virtual-node-fss-architecture.png)
 
-## Deploy the infrastructure with Resource Manager
+## Deploy this pattern
+
+You can start with the accompanying OCI Resource Manager stack. It packages the infrastructure choices behind a guided Terraform workflow and then hands off to the included Helm chart for the application deployment.
 
 [![Deploy to Oracle Cloud](https://oci-resourcemanager-plugin.plugins.oci.oraclecloud.com/latest/deploy-to-oracle-cloud.svg)](https://cloud.oracle.com/resourcemanager/stacks/create?zipUrl=https://github.com/chiphwang1/oke-virtual-nodes-fss-wordpress/archive/refs/heads/main.zip)
 
-The accompanying Resource Manager stack prompts whether to use an existing OKE cluster or create a new Enhanced cluster, and whether to create or use existing FSS and MySQL resources. After the stack finishes, use the included Helm chart to deploy WordPress. The button opens the OCI Create Stack page with the GitHub Terraform package preselected, following the [Deploy to Oracle Cloud button guidance](https://docs.oracle.com/en-us/iaas/Content/ResourceManager/Tasks/deploybutton.htm).
+The stack prompts for three architectural choices:
+
+- **OKE cluster:** use an existing cluster or create a new Enhanced OKE cluster.
+- **FSS:** create a new FSS share or use an existing one.
+- **External MySQL:** create a new MySQL DB System or connect WordPress to an existing service.
+
+The button opens OCI Resource Manager with the GitHub Terraform package already selected. Review the variables, confirm any cost-bearing choices such as a new MySQL DB System, and run the apply job. When it completes, configure the Helm chart with the stack outputs and install WordPress into the target cluster. This implementation follows Oracle's [Deploy to Oracle Cloud button guidance](https://docs.oracle.com/en-us/iaas/Content/ResourceManager/Tasks/deploybutton.htm).
 
 ## Why persistent storage changes the Virtual Node use case
 
