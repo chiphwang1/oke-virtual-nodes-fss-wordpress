@@ -61,13 +61,13 @@ kubectl -n wordpress get pvc,pods,service
 kubectl -n wordpress rollout status deployment/wordpress
 ```
 
-The PVC should be `Bound`, both WordPress pods should be `Ready`, and the LoadBalancer Service should receive an external address. Upload a file and retrieve it through both replicas to verify that content is shared. Also verify that WordPress can create and read database content through MySQL.
+You are ready to continue when the PVC is `Bound`, both WordPress pods are `Ready`, and the LoadBalancer Service has an external address. Upload a file, then retrieve it through both pods to confirm that FSS content is shared. Finally, create and read WordPress content to confirm the MySQL connection works.
 
-The chart starts two replicas with required anti-affinity. With only two usable Virtual Nodes, a third replica remains Pending. Expand the Virtual Node topology before increasing replicas or configuring an HPA above the available capacity.
+The chart starts two replicas and places them on separate Virtual Nodes. If the pool has only two usable Virtual Nodes, a third replica stays Pending. Add Virtual Node capacity before increasing the replica count or configuring an HPA above two replicas.
 
-For production, use highly available MySQL, backups and restore tests, approved secret delivery, TLS, DNS, and a tested WordPress image tag or digest. The chart sets matching pod-level CPU and memory requests and limits for Virtual Nodes. Size them for the workload and cost model.
+For production, use highly available MySQL, test backups and restores, store credentials in an approved secret-management system, and configure TLS and DNS. Use a tested WordPress image tag or digest. The chart sets matching CPU and memory requests and limits for Virtual Nodes. Adjust them for the expected workload and cost.
 
-A PVC capacity request does not create a fixed-size FSS filesystem. Plan FSS capacity and cost separately. The example StorageClass uses `Retain`, so deleting the PVC leaves FSS data behind. Define backup, retention, and cleanup procedures before deployment.
+The PVC capacity request is required by Kubernetes, but it does not set a fixed FSS filesystem size. Plan FSS capacity and cost separately. The example StorageClass uses `Retain`, which keeps FSS data after the PVC is deleted. Define backup, retention, and cleanup procedures before deploying the application.
 
 ## Cleanup
 
