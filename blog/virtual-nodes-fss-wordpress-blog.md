@@ -26,11 +26,7 @@ WordPress has two forms of state that belong in different services.
 
 The WordPress replicas mount the same FSS claim at `/var/www/html/wp-content` and connect to one external MySQL database. FSS is for shared files, not relational database state.
 
-## Sessions and scaling
-
-Standard WordPress does not need sticky sessions. It uses authentication cookies, and all replicas use the same MySQL database, FSS-backed content, and WordPress keys and salts. Requests can safely reach either pod.
-
-Use one Kubernetes Secret for the eight `WORDPRESS_*_KEY` and `WORDPRESS_*_SALT` values and inject it into every replica. Sticky sessions are only a fallback for plugins or custom code that keep state inside the pod.
+## Scaling
 
 The example uses two replicas with anti-affinity. Do not configure application scaling beyond the Virtual Node capacity and topology available to the deployment.
 
