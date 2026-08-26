@@ -54,19 +54,6 @@ The WordPress Deployment runs two replicas, and required pod anti-affinity place
 
 This is important: FSS is the right solution for shared *files*, not a replacement for MySQL. Keep the database external and use FSS for the application content that must be identical across replicas.
 
-## What we validated
-
-The Phoenix environment used for this example was validated end to end:
-
-- Two Virtual Nodes reached `Ready` state.
-- The FSS CSI driver dynamically provisioned an RWX PVC from a `StorageClass`.
-- Writer and reader pods on different Virtual Nodes shared the same file successfully.
-- Two WordPress pods mounted the same PVC and ran on separate Virtual Nodes.
-- External MySQL was initialized with the WordPress schema.
-- The public WordPress endpoint returned HTTP 200, and an administrator login succeeded.
-
-The original test in Ashburn showed why validation matters: the PVC provisioned and bound, but the Virtual Node runtime rejected the volume mount. The same Kubernetes-native configuration was successful in Phoenix. Validate the feature in the target region and tenancy before treating it as a production dependency.
-
 ## Prerequisites
 
 Before deploying this pattern, make sure that you have:
