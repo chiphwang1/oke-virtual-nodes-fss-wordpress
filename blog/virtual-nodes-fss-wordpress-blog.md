@@ -1,31 +1,22 @@
 # Build Stateful Kubernetes Applications on OKE Virtual Nodes with OCI File Storage
 
-OCI Kubernetes Engine, or OKE, Virtual Nodes offer a serverless Kubernetes experience. Kubernetes schedules pods while OCI operates the underlying worker infrastructure. That model removes the need to provision, patch, scale, or maintain node pools for the application.
+OCI Kubernetes Engine, or OKE, Virtual Nodes offer a serverless Kubernetes experience. Kubernetes schedules pods while OCI operates the underlying worker infrastructure. Application teams do not need to provision, patch, scale, or maintain worker nodes.
 
-For a long time, however, one important question limited which workloads were a good fit. Where does durable application data live when the pod itself is ephemeral?
+That simplicity has traditionally suited stateless applications best. Pods can restart, be replaced, or move as an application scales, so files written only inside a container are not durable.
 
-This pattern combines Virtual Nodes with OCI File Storage, or FSS, for shared WordPress content and an external MySQL DB System for relational data.
+Persistent storage with OCI File Storage, or FSS, changes that. Virtual Node workloads can now retain shared application files beyond the lifecycle of an individual pod while keeping the operational simplicity of serverless Kubernetes compute.
 
-Persistent storage is now available for OKE Virtual Nodes, enabling workloads that need durable shared application files.
+## From ephemeral pods to durable shared files
 
-## Persistent storage without worker-node management
+FSS integrates with Kubernetes through the familiar PersistentVolume and PersistentVolumeClaim model. An application requests storage with a PVC, and Kubernetes mounts the resulting volume into the pod.
 
-Virtual Nodes provide serverless Kubernetes compute. Kubernetes schedules pods and OCI operates the underlying worker infrastructure, so application teams do not need to provision, patch, scale, or maintain worker nodes.
+FSS supports the `ReadWriteMany`, or RWX, access mode. Multiple pods can mount the same filesystem for read and write access at the same time. This makes the pattern useful for content services, shared workspaces, build artifacts, data-processing stages, and AI or machine-learning datasets and model artifacts.
 
-Pods remain ephemeral by design. A pod can be restarted, replaced, or rescheduled at any time. Data written only to a container filesystem is therefore not a durable application-data strategy.
+The FSS CSI driver supports two approaches. Dynamic provisioning creates the required filesystem resources from the StorageClass and PVC. Static provisioning connects a pre-created FSS filesystem and export through a PersistentVolume. This example uses dynamic provisioning.
 
-FSS-backed persistent volumes solve that problem using the Kubernetes storage model developers already know. An application requests storage with a PersistentVolumeClaim, or PVC, and Kubernetes mounts the resulting volume in the pod. With FSS, the claim can use `ReadWriteMany`, or RWX, so multiple pods can read and write the same filesystem.
+## Why WordPress is a useful example
 
-The OCI FSS CSI driver supports two provisioning models.
-
-- Dynamic provisioning creates the filesystem resources required by a StorageClass and PVC.
-- Static provisioning connects a pre-created FSS filesystem and export through a PersistentVolume.
-
-This article demonstrates the dynamic pattern with WordPress, but the same model can support other workloads that need durable shared files.
-
-## The WordPress example
-
-WordPress is a useful example because it has two different kinds of state. Database records belong in MySQL, while uploads, themes, plugins, and other `wp-content` files need shared filesystem storage. Keeping these responsibilities separate lets two WordPress replicas serve the same site.
+WordPress has two kinds of state that need different homes. Database records belong in MySQL. Uploads, themes, plugins, and other `wp-content` files need a shared filesystem. Separating those responsibilities allows two WordPress replicas to serve the same site.
 
 | State | Location |
 | --- | --- |
@@ -33,29 +24,25 @@ WordPress is a useful example because it has two different kinds of state. Datab
 | Uploads, themes, plugins, and `wp-content` files | FSS RWX volume |
 | Web-serving compute | OKE Virtual Nodes |
 
-The WordPress pods share the FSS-backed PVC and connect to the same external MySQL database. The chart also gives every replica the same WordPress authentication keys and salts, so a request can safely reach either pod without sticky sessions.
+Both WordPress pods mount the same FSS-backed PVC and connect to the same external MySQL DB System. The Helm chart also supplies identical WordPress authentication keys and salts to each replica, so the load balancer can send a request to either pod without sticky sessions.
 
 ## Architecture
 
-Two WordPress replicas run in a Virtual Node pool. An OCI Load Balancer distributes traffic to the pods. The pods reach FSS through a PVC and PV, and connect to a private MySQL endpoint.
+An OCI Load Balancer distributes traffic to two WordPress pods in a Virtual Node pool. The pods access shared content through the Kubernetes PVC and PV layer, then the FSS mount target and export. They use a private MySQL endpoint for relational data.
 
 ![OKE Virtual Nodes, FSS, and external MySQL architecture](assets/wordpress-virtual-node-fss-architecture-v2.svg)
 
-FSS and its mount target are OCI resources in the VCN, outside the OKE cluster boundary. The data path is pod to PVC to PV to FSS export. A StorageClass defines how a PVC is provisioned. It is not mounted directly by a pod.
+FSS and its mount target are OCI resources in the VCN, outside the OKE cluster boundary. The application data path is pod to PVC to PV to FSS export. A StorageClass defines how the PVC is provisioned. It is not mounted directly by a pod.
 
-## Deploy the infrastructure
+## Deploy the pattern
 
 [![Deploy to Oracle Cloud](https://oci-resourcemanager-plugin.plugins.oci.oraclecloud.com/latest/deploy-to-oracle-cloud.svg)](https://cloud.oracle.com/resourcemanager/stacks/create?zipUrl=https://github.com/chiphwang1/oke-virtual-nodes-fss-wordpress/releases/download/v0.1.1/oke-vn-fss-wordpress-orm.zip)
 
 The Resource Manager stack can use an existing Enhanced OKE cluster or create one. It creates the Virtual Node pool and prompts for new or existing FSS and MySQL prerequisites. Creating a MySQL DB System incurs service charges.
 
-The stack provisions OCI infrastructure. It does not install the WordPress Helm release.
+The stack provisions OCI infrastructure. It does not install the application. After the stack completes, use the included [WordPress Helm chart](https://github.com/chiphwang1/oke-virtual-nodes-fss-wordpress/tree/main/helm/wordpress-virtual-fss) to deploy WordPress.
 
-## Deploy WordPress
-
-The included [WordPress Helm chart](https://github.com/chiphwang1/oke-virtual-nodes-fss-wordpress/tree/main/helm/wordpress-virtual-fss) creates the FSS StorageClass and PVC when dynamic provisioning is selected. It expects a Kubernetes Secret named `wordpress-db` with `host`, `database`, `username`, and `password` keys.
-
-Clone the repository, review the chart values, then install into its own namespace.
+The chart expects a Kubernetes Secret named `wordpress-db` with `host`, `database`, `username`, and `password` keys. Review its values, then install it into its own namespace.
 
 ```bash
 git clone https://github.com/chiphwang1/oke-virtual-nodes-fss-wordpress.git
@@ -67,35 +54,29 @@ helm upgrade --install wordpress \
   --set fss.mountTargetSubnetOcid='<mount-target-subnet-ocid>'
 ```
 
-Use `fss.mode=dynamic-existing-mount-target` and set `fss.mountTargetOcid` when the CSI driver must use an existing mount target. Set `mysql.tls.enabled=true` only after MySQL has been configured to require TLS and the setting has been tested with the application.
+Set `fss.mode=dynamic-existing-mount-target` and provide `fss.mountTargetOcid` when the CSI driver should use an existing mount target. Set `mysql.tls.enabled=true` only after MySQL has been configured to require TLS and the application connection has been tested.
 
-## Scale and validate
+## Validate, scale, and operate
 
-The chart starts two replicas with required anti-affinity. With only two usable Virtual Nodes, a third replica remains Pending. Expand the Virtual Node topology before increasing replicas or configuring an HPA above the available capacity.
-
-Confirm the deployment before exposing it to users.
+Start by confirming the claim, pods, and load balancer are ready.
 
 ```bash
 kubectl -n wordpress get pvc,pods,service
 kubectl -n wordpress rollout status deployment/wordpress
 ```
 
-Expect the PVC to be `Bound`, both WordPress pods to be `Ready`, and the LoadBalancer Service to receive an external address. Test an upload and retrieve it through both replicas to confirm shared FSS content. Also verify that WordPress can create and read database content through the MySQL endpoint.
+The PVC should be `Bound`, both WordPress pods should be `Ready`, and the LoadBalancer Service should receive an external address. Upload a file and retrieve it through both replicas to confirm that FSS content is shared. Also verify that WordPress can create and read database content through MySQL.
 
-## Production guidance
+The chart starts two replicas with required anti-affinity. If only two Virtual Nodes are available, a third replica remains Pending. Expand the Virtual Node topology before increasing replicas or configuring an HPA above the available capacity.
 
-- Use a highly available MySQL deployment, backups, and restore tests.
-- Put database credentials in Vault or an approved secret-delivery system.
-- Use TLS for the public endpoint, a DNS name, and TLS for MySQL.
-- The chart sets identical pod-level CPU and memory requests and limits, as required for Virtual Nodes. Size them for the workload and cost model.
-- Pin the WordPress image to a tested tag or immutable digest.
-- A PVC capacity request is required by Kubernetes but does not create a fixed-size FSS filesystem. Plan FSS capacity and cost separately.
-- The StorageClass uses `Retain`. Deleting the PVC leaves FSS data behind. Define explicit backup, retention, and cleanup procedures.
+For production, use a highly available MySQL deployment, backups, restore tests, Vault or another approved secret-delivery system, TLS, a DNS name, and a tested WordPress image tag or digest. The chart sets identical pod-level CPU and memory requests and limits, which Virtual Nodes require. Size those values for the workload and cost model.
+
+A PVC capacity request is required by Kubernetes, but it does not create a fixed-size FSS filesystem. Plan FSS capacity and cost separately. The example StorageClass uses `Retain`, so deleting the PVC leaves FSS data behind. Define backup, retention, and cleanup procedures before deployment.
 
 ## Cleanup
 
-Uninstall the Helm release with `helm uninstall wordpress --namespace wordpress`. Review FSS exports, file systems, mount targets, MySQL DB Systems, and the Resource Manager stack before deleting them. Retained FSS data and MySQL resources can continue to incur charges.
+Uninstall the application with `helm uninstall wordpress --namespace wordpress`. Then review the Resource Manager stack, FSS exports, file systems, mount targets, and MySQL DB Systems before deleting them. Retained FSS data and MySQL resources can continue to incur charges.
 
 ## Conclusion
 
-FSS-backed persistent volumes bring durable shared file storage to OKE Virtual Nodes through standard Kubernetes APIs. Virtual Nodes run the web tier, MySQL stores relational data, and FSS stores shared application files. That combination lets teams evaluate a wider range of stateful, file-oriented workloads without managing worker nodes.
+FSS-backed persistent volumes extend OKE Virtual Nodes to workloads that need durable shared files. Virtual Nodes run the web tier, MySQL stores relational data, and FSS stores shared application content. Together, they provide a Kubernetes-native way to run file-oriented stateful applications without managing worker nodes.
