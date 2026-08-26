@@ -22,3 +22,9 @@ fss:
 service:
   type: LoadBalancer
   port: 80
+  # OCI Load Balancer application-cookie persistence. This is not supported by
+  # OCI Network Load Balancers and is optional for stateless WordPress replicas.
+  stickySession:
+    enabled: false
+    cookieName: wordpress-session
+    disableFallback: false
