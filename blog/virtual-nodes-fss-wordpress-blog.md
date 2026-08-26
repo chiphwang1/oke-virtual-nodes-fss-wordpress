@@ -6,7 +6,7 @@ For a long time, however, one important question limited which workloads were a 
 
 This pattern combines Virtual Nodes with OCI File Storage, or FSS, for shared WordPress content and an external MySQL DB System for relational data.
 
-> **Availability note**  This is a field pattern for a tenancy and region where FSS-backed PVCs for Virtual Nodes have been enabled. As of 26 August 2026, Oracle’s public Virtual Node documentation still lists PVCs and persistent storage as unsupported. Confirm support with Oracle for the target tenancy and region before using this design. [Virtual Node comparison](https://docs.oracle.com/en-us/iaas/Content/ContEng/Tasks/contengcomparingvirtualwithmanagednodes_topic.htm)
+Persistent storage is now available for OKE Virtual Nodes, enabling workloads that need durable shared application files.
 
 ## What the pattern builds
 
