@@ -61,7 +61,7 @@ kubectl -n wordpress get pvc,pods,service
 kubectl -n wordpress rollout status deployment/wordpress
 ```
 
-You are ready to continue when the PVC is `Bound`, both WordPress pods are `Ready`, and the LoadBalancer Service has an external address. Upload a file, then retrieve it through both pods to confirm that FSS content is shared. Finally, create and read WordPress content to confirm the MySQL connection works.
+You are ready to continue when the PVC is `Bound`, both WordPress pods are `Ready`, and the LoadBalancer Service has an external address. Finally, create and read WordPress content to confirm the MySQL connection works.
 
 The chart starts two replicas and places them on separate Virtual Nodes. If the pool has only two usable Virtual Nodes, a third replica stays Pending. Add Virtual Node capacity before increasing the replica count or configuring an HPA above two replicas.
 
