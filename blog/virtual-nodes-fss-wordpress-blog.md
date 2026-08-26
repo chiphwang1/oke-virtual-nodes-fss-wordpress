@@ -38,7 +38,7 @@ FSS and its mount target are OCI resources in the VCN, outside the OKE cluster b
 
 [![Deploy to Oracle Cloud](https://oci-resourcemanager-plugin.plugins.oci.oraclecloud.com/latest/deploy-to-oracle-cloud.svg)](https://cloud.oracle.com/resourcemanager/stacks/create?zipUrl=https://github.com/chiphwang1/oke-virtual-nodes-fss-wordpress/releases/download/v0.1.1/oke-vn-fss-wordpress-orm.zip)
 
-The Resource Manager stack can use an existing Enhanced OKE cluster or create one. It creates the Virtual Node pool and prompts for FSS and MySQL prerequisites. Creating MySQL incurs service charges. The stack provisions OCI infrastructure only.
+The Resource Manager stack can use an existing Enhanced OKE cluster or create one. It creates the Virtual Node pool and prompts for FSS and MySQL prerequisites. The stack provisions OCI infrastructure only.
 
 After the stack completes, deploy WordPress with the included [Helm chart](https://github.com/chiphwang1/oke-virtual-nodes-fss-wordpress/tree/main/helm/wordpress-virtual-fss). Create a `wordpress-db` Secret with `host`, `database`, `username`, and `password` keys, then install the chart.
 
@@ -65,11 +65,11 @@ You are ready to continue when the PVC is `Bound`, both WordPress pods are `Read
 
 The chart starts two replicas and places them on separate Virtual Nodes. If the pool has only two usable Virtual Nodes, a third replica stays Pending. Add Virtual Node capacity before increasing the replica count or configuring an HPA above two replicas.
 
-The PVC capacity request is required by Kubernetes, but it does not set a fixed FSS filesystem size. Plan FSS capacity and cost separately. The example StorageClass uses `Retain`, which keeps FSS data after the PVC is deleted. Define backup, retention, and cleanup procedures before deploying the application.
+The PVC capacity request is required by Kubernetes, but it does not set a fixed FSS filesystem size. The example StorageClass uses `Retain`, which keeps FSS data after the PVC is deleted. Define backup, retention, and cleanup procedures before deploying the application.
 
 ## Cleanup
 
-Run `helm uninstall wordpress --namespace wordpress`, then review the Resource Manager stack, FSS exports, file systems, mount targets, and MySQL DB Systems before deleting them. Retained FSS data and MySQL resources can continue to incur charges.
+Run `helm uninstall wordpress --namespace wordpress`, then review the Resource Manager stack, FSS exports, file systems, mount targets, and MySQL DB Systems before deleting them.
 
 ## Conclusion
 
