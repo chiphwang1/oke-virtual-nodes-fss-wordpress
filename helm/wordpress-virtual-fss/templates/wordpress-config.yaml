@@ -1,0 +1,25 @@
+{{- $secretName := default (printf "%s-config" (include "wordpress-virtual-fss.fullname" .)) .Values.wordpress.configSecret }}
+{{- if not .Values.wordpress.configSecret }}
+{{- if not (lookup "v1" "Secret" .Release.Namespace $secretName) }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ $secretName }}
+  labels:
+    app.kubernetes.io/name: {{ include "wordpress-virtual-fss.name" . }}
+type: Opaque
+stringData:
+  wordpress-config-extra: |
+    define( 'AUTH_KEY', '{{ randAlphaNum 64 }}' );
+    define( 'SECURE_AUTH_KEY', '{{ randAlphaNum 64 }}' );
+    define( 'LOGGED_IN_KEY', '{{ randAlphaNum 64 }}' );
+    define( 'NONCE_KEY', '{{ randAlphaNum 64 }}' );
+    define( 'AUTH_SALT', '{{ randAlphaNum 64 }}' );
+    define( 'SECURE_AUTH_SALT', '{{ randAlphaNum 64 }}' );
+    define( 'LOGGED_IN_SALT', '{{ randAlphaNum 64 }}' );
+    define( 'NONCE_SALT', '{{ randAlphaNum 64 }}' );
+    {{- if .Values.mysql.tls.enabled }}
+    define( 'MYSQL_CLIENT_FLAGS', MYSQLI_CLIENT_SSL );
+    {{- end }}
+{{- end }}
+{{- end }}

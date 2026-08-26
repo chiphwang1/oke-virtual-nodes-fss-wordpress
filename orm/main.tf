@@ -37,6 +37,7 @@ resource "oci_containerengine_virtual_node_pool" "wordpress" {
   size           = var.virtual_node_count
   placement_configurations {
     availability_domain = var.availability_domain
+    fault_domain        = [var.fault_domain]
     subnet_id           = var.virtual_node_subnet_ocid
   }
   pod_configuration {
@@ -83,14 +84,14 @@ resource "oci_file_storage_export" "wordpress" {
 }
 
 resource "oci_mysql_mysql_db_system" "wordpress" {
-  count                    = local.create_mysql ? 1 : 0
-  availability_domain      = var.availability_domain
-  compartment_id           = var.compartment_ocid
-  subnet_id                = var.mysql_subnet_ocid
-  shape_name               = var.mysql_shape_name
-  display_name             = "${var.cluster_name}-wordpress"
-  admin_username           = var.mysql_admin_username
-  admin_password           = var.mysql_admin_password
-  data_storage_size_in_gbs = var.mysql_storage_gb
-  is_highly_available      = var.mysql_high_availability
+  count                   = local.create_mysql ? 1 : 0
+  availability_domain     = var.availability_domain
+  compartment_id          = var.compartment_ocid
+  subnet_id               = var.mysql_subnet_ocid
+  shape_name              = var.mysql_shape_name
+  display_name            = "${var.cluster_name}-wordpress"
+  admin_username          = var.mysql_admin_username
+  admin_password          = var.mysql_admin_password
+  data_storage_size_in_gb = var.mysql_storage_gb
+  is_highly_available     = var.mysql_high_availability
 }

@@ -7,7 +7,7 @@ variableGroups:
   - title: "Target and Cluster"
     variables: [region, compartment_ocid, cluster_mode, existing_cluster_ocid, cluster_name, kubernetes_version, vcn_ocid, control_plane_subnet_ocid, load_balancer_subnet_ocid, control_plane_is_public, pods_cidr, services_cidr]
   - title: "Virtual Nodes"
-    variables: [availability_domain, virtual_node_subnet_ocid, virtual_node_pool_name, virtual_node_count, pod_shape]
+    variables: [availability_domain, fault_domain, virtual_node_subnet_ocid, virtual_node_pool_name, virtual_node_count, pod_shape]
   - title: "FSS Choice"
     variables: [fss_mode, create_fss_mount_target, fss_mount_target_subnet_ocid, existing_fss_export_set_ocid, fss_export_path, allowed_pod_cidr]
   - title: "MySQL Choice"
@@ -26,6 +26,7 @@ variables:
   pods_cidr: { title: Pod CIDR, type: string, default: 10.244.0.0/16, visible: { eq: [${cluster_mode}, create] } }
   services_cidr: { title: Service CIDR, type: string, default: 10.96.0.0/16, visible: { eq: [${cluster_mode}, create] } }
   availability_domain: { title: Availability domain, type: string, required: true }
+  fault_domain: { title: Fault domain, type: string, required: true }
   virtual_node_subnet_ocid: { title: Virtual Node pod subnet OCID, type: string, required: true }
   virtual_node_pool_name: { title: Virtual Node pool name, type: string, default: wordpress-virtual-nodes }
   virtual_node_count: { title: Virtual Node count, type: integer, default: 2 }

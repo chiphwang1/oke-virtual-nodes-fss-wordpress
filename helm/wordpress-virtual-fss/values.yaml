@@ -2,11 +2,17 @@ replicaCount: 2
 image:
   repository: wordpress
   tag: 6.8.2-apache
+wordpress:
+  # Leave empty to let the chart create and retain a Secret containing
+  # WordPress keys and salts. Set this to use a centrally managed Secret.
+  configSecret: ""
 virtualNodes:
   taintKey: workload
   taintValue: wordpress
 mysql:
   existingSecret: wordpress-db
+  tls:
+    enabled: false
 fss:
   # dynamic-new, dynamic-existing-mount-target, or existing-claim
   mode: dynamic-new
@@ -22,3 +28,10 @@ fss:
 service:
   type: LoadBalancer
   port: 80
+resources:
+  requests:
+    cpu: "1"
+    memory: 2Gi
+  limits:
+    cpu: "1"
+    memory: 2Gi
