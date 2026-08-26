@@ -65,8 +65,6 @@ You are ready to continue when the PVC is `Bound`, both WordPress pods are `Read
 
 The chart starts two replicas and places them on separate Virtual Nodes. If the pool has only two usable Virtual Nodes, a third replica stays Pending. Add Virtual Node capacity before increasing the replica count or configuring an HPA above two replicas.
 
-For production, use highly available MySQL, test backups and restores, store credentials in an approved secret-management system, and configure TLS and DNS. Use a tested WordPress image tag or digest. The chart sets matching CPU and memory requests and limits for Virtual Nodes. Adjust them for the expected workload and cost.
-
 The PVC capacity request is required by Kubernetes, but it does not set a fixed FSS filesystem size. Plan FSS capacity and cost separately. The example StorageClass uses `Retain`, which keeps FSS data after the PVC is deleted. Define backup, retention, and cleanup procedures before deploying the application.
 
 ## Cleanup
