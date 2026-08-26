@@ -1,8 +1,12 @@
 # Build Stateful Kubernetes Applications on OKE Virtual Nodes with OCI File Storage
 
-OCI Kubernetes Engine, or OKE, Virtual Nodes provide a serverless Kubernetes experience without customer-managed worker nodes. Persistent data needs a separate design because pods can be replaced at any time.
+OCI Kubernetes Engine, or OKE, Virtual Nodes offer a serverless Kubernetes experience. Kubernetes schedules pods while OCI operates the underlying worker infrastructure. That model removes the need to provision, patch, scale, or maintain node pools for the application.
 
-OCI File Storage, or FSS, provides durable shared filesystem storage through the Kubernetes PVC model. It is useful for workloads that need shared files, including uploads, build artifacts, shared workspaces, and model artifacts.
+For a long time, however, one important question limited which workloads were a good fit. Where does durable application data live when the pod itself is ephemeral?
+
+Virtual Nodes can use Kubernetes persistent volumes backed by OCI File Storage, or FSS. The result is a useful pattern that combines serverless Kubernetes compute with durable, shared, POSIX-style file storage.
+
+This post explains the pattern using a highly available WordPress front end running on two Virtual Nodes, an external MySQL database, and an FSS-backed `ReadWriteMany` RWX volume for shared WordPress content.
 
 ![OKE Virtual Nodes, FSS, and external MySQL architecture](assets/wordpress-virtual-node-fss-architecture.png)
 
