@@ -1,36 +1,34 @@
-# Build Stateful Kubernetes Applications on OKE Virtual Nodes with OCI File Storage
+# Running Stateful Workloads on OKE Virtual Nodes with OCI File Storage
 
-OCI Kubernetes Engine (OKE) Virtual Nodes offer a serverless Kubernetes experience: Kubernetes schedules pods while OCI operates the underlying worker infrastructure. That model removes the need to provision, patch, scale, or maintain node pools for the application.
+OCI Kubernetes Engine, or OKE, Virtual Nodes are a good fit when a team wants Kubernetes without operating worker nodes. OCI handles the worker infrastructure while Kubernetes still schedules the pods.
 
-For a long time, however, one important question limited which workloads were a good fit: where does durable application data live when the pod itself is ephemeral?
+The hard part used to be application files. A Virtual Node pod can be restarted, replaced, or moved, so anything left only in its container filesystem goes with it. That ruled out a number of otherwise sensible workloads.
 
-OKE Virtual Nodes now support Kubernetes persistent volumes backed by OCI File Storage (FSS). The result is a useful new pattern: serverless Kubernetes compute combined with durable, shared, POSIX-style file storage.
-
-This post explains the pattern using a highly available WordPress front end running on two Virtual Nodes, an external MySQL database, and an FSS-backed `ReadWriteMany` (RWX) volume for shared WordPress content.
+FSS-backed persistent volumes change that. A pod can now use durable shared storage through the same Kubernetes PVC workflow used on managed nodes. In the Phoenix test described here, two WordPress pods ran on separate Virtual Nodes, shared one FSS volume for `wp-content`, and used an external MySQL database for site data.
 
 ![OKE Virtual Nodes, FSS, and external MySQL architecture](assets/wordpress-virtual-node-fss-architecture.png)
 
 ## Deploy this pattern
 
-You can start with the accompanying OCI Resource Manager stack. It packages the infrastructure choices behind a guided Terraform workflow and then hands off to the included Helm chart for the application deployment.
+You can start with the accompanying OCI Resource Manager stack. It presents the infrastructure choices in Terraform and then hands off to the included Helm chart for the application deployment.
 
 [![Deploy to Oracle Cloud](https://oci-resourcemanager-plugin.plugins.oci.oraclecloud.com/latest/deploy-to-oracle-cloud.svg)](https://cloud.oracle.com/resourcemanager/stacks/create?zipUrl=https://github.com/chiphwang1/oke-virtual-nodes-fss-wordpress/archive/refs/heads/main.zip)
 
-The stack prompts for three architectural choices:
+The stack prompts for three choices
 
 - **OKE cluster:** use an existing cluster or create a new Enhanced OKE cluster.
 - **FSS:** create a new FSS share or use an existing one.
 - **External MySQL:** create a new MySQL DB System or connect WordPress to an existing service.
 
-The button opens OCI Resource Manager with the GitHub Terraform package already selected. Review the variables, confirm any cost-bearing choices such as a new MySQL DB System, and run the apply job. When it completes, configure the Helm chart with the stack outputs and install WordPress into the target cluster. This implementation follows Oracle's [Deploy to Oracle Cloud button guidance](https://docs.oracle.com/en-us/iaas/Content/ResourceManager/Tasks/deploybutton.htm).
+The button opens OCI Resource Manager with the GitHub Terraform package already selected. Review the variables, especially anything that creates a billable MySQL DB System, then run the apply job. When it finishes, use the outputs to configure the Helm chart and install WordPress in the target cluster. The button follows Oracle's [Deploy to Oracle Cloud button guidance](https://docs.oracle.com/en-us/iaas/Content/ResourceManager/Tasks/deploybutton.htm).
 
 ## Why persistent storage changes the Virtual Node use case
 
 Pods are disposable by design. A pod can be restarted, replaced during a rollout, or rescheduled as the application scales. Anything written only to the container filesystem is therefore not durable.
 
-Before FSS-backed volumes, Virtual Node workloads were best suited to applications that were completely stateless or that stored all state in external services. That remains an excellent pattern, but it does not cover workloads that need a shared filesystem for uploads, generated content, artifacts, model files, or collaborative workspaces.
+Before FSS-backed volumes, Virtual Node workloads worked best when they were fully stateless or pushed every bit of state into an external service. That remains a solid design, but it does not help applications that need a shared filesystem for uploads, generated content, artifacts, model files, or a workspace shared by several pods.
 
-OCI FSS fills that gap. Its CSI driver exposes FSS through standard Kubernetes storage resources:
+OCI FSS fills that gap. Its CSI driver exposes FSS through familiar Kubernetes storage resources
 
 1. A `StorageClass` describes how FSS should be provisioned.
 2. A `PersistentVolumeClaim` (PVC) requests storage.
@@ -38,11 +36,11 @@ OCI FSS fills that gap. Its CSI driver exposes FSS through standard Kubernetes s
 
 With the `ReadWriteMany` access mode, multiple pods can mount the same filesystem read-write at the same time. The data outlives individual pods and remains available when Virtual Node pods are replaced.
 
-This supports patterns such as shared application content, build workspaces, CI/CD artifacts, processing pipelines, datasets and checkpoints for ML workflows, and other applications that need a durable shared filesystem without customer-managed worker nodes.
+That opens the door to shared application content, build workspaces, CI/CD artifacts, processing pipelines, datasets and checkpoints for ML workflows, and other applications that need a durable shared filesystem without customer-managed worker nodes.
 
 ## The WordPress pattern
 
-WordPress is a useful demonstration because it has two distinct kinds of state:
+WordPress makes the split easy to see because it has two kinds of state
 
 | State | Recommended location | Why |
 | --- | --- | --- |
@@ -52,11 +50,11 @@ WordPress is a useful demonstration because it has two distinct kinds of state:
 
 The WordPress Deployment runs two replicas, and required pod anti-affinity places them on separate Virtual Nodes. An OCI Load Balancer created by a Kubernetes `Service` distributes HTTP traffic to the replicas. Both replicas mount the FSS PVC at `/var/www/html/wp-content` and connect to the same external MySQL database.
 
-This is important: FSS is the right solution for shared *files*, not a replacement for MySQL. Keep the database external and use FSS for the application content that must be identical across replicas.
+FSS is the right solution for shared *files*. It is not a replacement for MySQL. Keep relational data in the database and use FSS for application content that must be identical across replicas.
 
 ## What we validated
 
-The Phoenix environment used for this example was validated end to end:
+The Phoenix environment was validated end to end
 
 - Two Virtual Nodes reached `Ready` state.
 - The FSS CSI driver dynamically provisioned an RWX PVC from a `StorageClass`.
@@ -65,7 +63,7 @@ The Phoenix environment used for this example was validated end to end:
 - External MySQL was initialized with the WordPress schema.
 - The public WordPress endpoint returned HTTP 200, and an administrator login succeeded.
 
-The original test in Ashburn showed why validation matters: the PVC provisioned and bound, but the Virtual Node runtime rejected the volume mount. The same Kubernetes-native configuration was successful in Phoenix. Validate the feature in the target region and tenancy before treating it as a production dependency.
+The first test in Ashburn showed why this check matters. The PVC provisioned and bound, but the Virtual Node runtime rejected the volume mount. The same Kubernetes configuration worked in Phoenix. Validate the feature in the region and tenancy where you intend to run it before treating it as a production dependency.
 
 ## Prerequisites
 
