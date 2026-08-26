@@ -1,10 +1,10 @@
 # Build Stateful Kubernetes Applications on OKE Virtual Nodes with OCI File Storage
 
-OCI Kubernetes Engine, or OKE, Virtual Nodes offer a serverless Kubernetes experience. Kubernetes schedules pods while OCI operates the underlying worker infrastructure. Application teams do not need to provision, patch, scale, or maintain worker nodes.
+OCI File Storage, or FSS, persistent volumes are now available for OCI Kubernetes Engine, or OKE, Virtual Nodes. This new capability brings durable shared filesystem storage to the serverless Kubernetes model.
 
-That simplicity has traditionally suited stateless applications best. Pods can restart, be replaced, or move as an application scales, so files written only inside a container are not durable.
+OKE Virtual Nodes let Kubernetes schedule pods while OCI operates the underlying worker infrastructure. Application teams do not need to provision, patch, scale, or maintain worker nodes. Until FSS persistent storage became available, that simplicity made Virtual Nodes best suited to applications that did not need durable local files.
 
-Persistent storage with OCI File Storage, or FSS, changes that. Virtual Node workloads can now retain shared application files beyond the lifecycle of an individual pod while keeping the operational simplicity of serverless Kubernetes compute.
+Pods can restart, be replaced, or move as an application scales, so files written only inside a container are not durable. FSS changes that. Virtual Node workloads can now retain shared application files beyond the lifecycle of an individual pod while keeping the operational simplicity of serverless Kubernetes compute.
 
 ## From ephemeral pods to durable shared files
 
@@ -79,4 +79,4 @@ Uninstall the application with `helm uninstall wordpress --namespace wordpress`.
 
 ## Conclusion
 
-FSS-backed persistent volumes extend OKE Virtual Nodes to workloads that need durable shared files. Virtual Nodes run the web tier, MySQL stores relational data, and FSS stores shared application content. Together, they provide a Kubernetes-native way to run file-oriented stateful applications without managing worker nodes.
+FSS-backed persistent volumes are a new capability that extends OKE Virtual Nodes to workloads needing durable shared files. Virtual Nodes run the web tier, MySQL stores relational data, and FSS stores shared application content. Together, they provide a Kubernetes-native way to run file-oriented stateful applications without managing worker nodes.
