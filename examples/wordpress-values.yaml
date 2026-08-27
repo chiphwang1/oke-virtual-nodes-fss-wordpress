@@ -1,0 +1,17 @@
+# Copy this file, replace the placeholder values, and pass it to Helm with -f.
+# The wordpress-db Secret must already exist in the target namespace.
+
+mysql:
+  existingSecret: wordpress-db
+
+fss:
+  # dynamic-new creates an FSS filesystem and mount target through the CSI driver.
+  mode: dynamic-new
+  availabilityDomain: <availability-domain>
+  compartmentOcid: <compartment-ocid>
+  mountTargetSubnetOcid: <mount-target-subnet-ocid>
+  exportPath: /wordpress
+  allowedSourceCidr: 10.0.0.0/16
+
+service:
+  type: LoadBalancer

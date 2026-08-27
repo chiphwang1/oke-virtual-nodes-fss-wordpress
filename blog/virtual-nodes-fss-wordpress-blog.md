@@ -40,16 +40,14 @@ FSS and its mount target are OCI resources in the VCN, outside the OKE cluster b
 
 The Resource Manager stack can use an existing Enhanced OKE cluster or create one. It creates the Virtual Node pool and prompts for FSS and MySQL prerequisites. The stack provisions OCI infrastructure only.
 
-After the stack completes, deploy WordPress with the included [Helm chart](https://github.com/chiphwang1/oke-virtual-nodes-fss-wordpress/tree/main/helm/wordpress-virtual-fss). Create a `wordpress-db` Secret with `host`, `database`, `username`, and `password` keys, then install the chart.
+After the stack completes, deploy WordPress with the included [Helm chart](https://github.com/chiphwang1/oke-virtual-nodes-fss-wordpress/tree/main/helm/wordpress-virtual-fss). Create a `wordpress-db` Secret with `host`, `database`, `username`, and `password` keys. Then copy and update the included [values file](https://github.com/chiphwang1/oke-virtual-nodes-fss-wordpress/blob/main/examples/wordpress-values.yaml) with the availability domain, compartment OCID, and mount-target subnet OCID.
 
 ```bash
 git clone https://github.com/chiphwang1/oke-virtual-nodes-fss-wordpress.git
 helm upgrade --install wordpress \
   ./oke-virtual-nodes-fss-wordpress/helm/wordpress-virtual-fss \
   --namespace wordpress --create-namespace \
-  --set fss.availabilityDomain='<availability-domain>' \
-  --set fss.compartmentOcid='<compartment-ocid>' \
-  --set fss.mountTargetSubnetOcid='<mount-target-subnet-ocid>'
+  --values ./oke-virtual-nodes-fss-wordpress/examples/wordpress-values.yaml
 ```
 
 Use `fss.mode=dynamic-existing-mount-target` with `fss.mountTargetOcid` when the CSI driver should use an existing mount target. Enable `mysql.tls.enabled` only after MySQL TLS is configured and tested.
