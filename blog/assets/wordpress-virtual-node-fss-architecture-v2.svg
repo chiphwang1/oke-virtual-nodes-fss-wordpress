@@ -16,6 +16,6 @@
   <rect x="1070" y="180" width="420" height="115" rx="14" class="oci"/><text x="1154" y="225" class="label">OCI Load Balancer</text><text x="1133" y="260" class="small">Public or private endpoint</text>
   <rect x="1070" y="390" width="420" height="150" rx="14" class="oci"/><text x="1165" y="435" class="label">FSS mount target</text><text x="1138" y="473" class="small">FSS filesystem and export</text><text x="1180" y="505" class="small">outside the OKE cluster</text>
   <rect x="1070" y="650" width="420" height="125" rx="14" class="oci"/><text x="1140" y="700" class="label">OCI MySQL DB System</text><text x="1198" y="735" class="small">Private endpoint with TLS</text>
-  <path d="M1070 238 L735 258" class="line"/><path d="M445 503 L510 625" class="dash"/><path d="M700 503 L600 625" class="dash"/><path d="M728 658 L1070 465" class="dash"/><path d="M445 470 L940 590" class="line"/><path d="M820 470 L940 590" class="line"/><path d="M940 590 L1070 710" class="line"/>
+  <path d="M1070 238 L735 258" class="line"/><path d="M430 303 L325 435" class="line"/><path d="M610 303 L700 435" class="line"/><path d="M445 503 L510 625" class="dash"/><path d="M700 503 L600 625" class="dash"/><path d="M728 658 L1070 465" class="dash"/><path d="M445 470 L940 590" class="line"/><path d="M820 470 L940 590" class="line"/><path d="M940 590 L1070 710" class="line"/>
   <text x="820" y="425" class="small">Pod → PVC → PV → FSS export</text><text x="850" y="640" class="small">Shared MySQL connection</text>
 </svg>
