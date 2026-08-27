@@ -16,7 +16,7 @@ The FSS CSI driver can dynamically provision storage from a StorageClass and PVC
 
 ## Why WordPress fits the pattern
 
-WordPress separates database state from shared files, allowing two replicas to serve one site.
+WordPress stores posts, users, settings, and comments in MySQL, while uploads, themes, plugins, and other `wp-content` files live on the shared FSS volume. This lets multiple WordPress replicas serve the same site.
 
 | State | Location |
 | --- | --- |
