@@ -12,7 +12,7 @@ Pods can restart, be replaced, or move as an application scales. Files kept only
 
 FSS supports `ReadWriteMany`, or RWX, so multiple pods can mount the same filesystem for read and write access. This supports content services, shared build workspaces, data-processing pipelines, and AI or machine-learning artifacts.
 
-The FSS CSI driver can dynamically provision storage from a StorageClass and PVC, or it can connect a pre-created FSS export through a PersistentVolume. This WordPress example uses dynamic provisioning.
+The FSS CSI driver supports dynamic and static provisioning. With dynamic provisioning, a PVC that references a StorageClass prompts the driver to create the required FSS resources. With static provisioning, an administrator creates a PersistentVolume for an existing FSS export and binds it to a PVC. This WordPress example uses dynamic provisioning.
 
 ## Why WordPress fits the pattern
 
