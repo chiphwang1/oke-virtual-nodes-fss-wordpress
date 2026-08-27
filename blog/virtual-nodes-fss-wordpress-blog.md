@@ -28,11 +28,9 @@ Both pods mount the same FSS-backed PVC and use the same MySQL database. The Hel
 
 ## Architecture
 
-An OCI Load Balancer distributes traffic to WordPress pods in a Virtual Node pool. The pods use a private MySQL endpoint for relational data.
+An OCI Load Balancer distributes traffic to WordPress pods in a Virtual Node pool. The pods use a shared FSS-backed PVC for WordPress files and a private MySQL endpoint for relational data. FSS and its mount target are OCI resources in the VCN, outside the OKE cluster boundary. Kubernetes uses the StorageClass to provision the PVC, which connects the pods to the FSS export.
 
 ![OKE Virtual Nodes, FSS, and external MySQL architecture](assets/wordpress-virtual-node-fss-architecture-v2.svg)
-
-FSS and its mount target are OCI resources in the VCN, outside the OKE cluster boundary. The path is pod to PVC to PV to FSS export. A StorageClass defines how Kubernetes provisions the PVC. It is not mounted directly by a pod.
 
 ## Deploy the infrastructure and application
 
